@@ -1,73 +1,32 @@
 'use client'
 
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-  Form,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getProviders, signIn } from 'next-auth/react'
 import { FC } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 interface AuthFormProps {
-  onSubmit?: (data: z.infer<typeof authSchema>) => void
+  providers: Awaited<ReturnType<typeof getProviders>>
 }
 
-export const AuthForm: FC<AuthFormProps> = ({ onSubmit = () => {} }) => {
-  const form = useForm<z.infer<typeof authSchema>>({
-    resolver: zodResolver(authSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  })
-
+export const AuthForm: FC<AuthFormProps> = ({ providers }) => {
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col space-y-8"
-        id="auth-form"
-      >
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input {...field} type="password" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
+    <Card className="w-[350px]">
+      <CardHeader className="text-center">
+        <CardTitle>Sign In</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col items-center text-center">
+        {!!providers &&
+          Object.values(providers).map((provider) => (
+            <Button
+              key={provider.name}
+              className="w-full"
+              onClick={() => signIn(provider.id)}
+            >
+              Sign in with {provider.name}
+            </Button>
+          ))}
+      </CardContent>
+    </Card>
   )
 }
-
-export const authSchema = z.object({
-  email: z.string().email('Valid email required'),
-  password: z.string(),
-})
-
-export type AuthSchema = z.infer<typeof authSchema>
